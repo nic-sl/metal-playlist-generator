@@ -1,11 +1,13 @@
 import os
 import spotipy
+import logging
 
-from typing import List
+from typing import List, Dict, Any
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotify_session.spotify_token_manager import SpotifyTokenManager
 from spotify_session.spotify_app_user import SpotifyAppUser
 
+logger = logging.getLogger("uvicorn")
 
 # noinspection PyMethodParameters
 class SpotifyAPITools:
@@ -23,26 +25,39 @@ class SpotifyAPITools:
         return spotipy.Spotify(auth_manager=auth_manager)
 
     @staticmethod
-    def _get_top_tracks(artist_name: str) -> List[str]:
+    def get_artist(artist_name: str) -> Dict[str, Any] | None:
+        logger.log(logging.INFO, f"Searching for artist: {artist_name}")
         sp = SpotifyAPITools._get_app_client()
 
-        search = sp.search(q=artist_name, type="artist", limit=1)
+        search = sp.search(q=artist_name, type="artist", limit=10)
         items = search.get("artists", {}).get("items", [])
-        if not items:
-            raise RuntimeError(
-                f"[Spotify Search Error] No artist found for name '{artist_name}'.\n"
-                f"Full response: {search}"
-            )
 
-        artist_id = items[0]["id"]
+        exact_matches = [
+            artist for artist in items
+            if artist.get("name", "").lower() == artist_name.lower()
+        ]
+
+        if not exact_matches:
+            logger.warning(f"No exact artist match found for '{artist_name}'")
+            return None
+
+        artist = exact_matches[0]
+        logger.log(logging.INFO, f"Found exact artist: {artist}")
+
+        return artist.get("id")
+
+    @staticmethod
+    def _get_top_tracks(artist_uri: str) -> List[str]:
+        sp = SpotifyAPITools._get_app_client()
         country = SpotifyAppUser.get_country()
 
-        top = sp.artist_top_tracks(artist_id, country=country)
+        top = sp.artist_top_tracks(artist_uri, country=country)
         tracks = top.get("tracks", [])
+
         if not tracks:
             raise RuntimeError(
                 f"[Spotify Top Tracks Error] No top tracks returned.\n"
-                f"Artist ID: {artist_id}\n"
+                f"Artist URI: {artist_uri}\n"
                 f"Full response: {top}"
             )
 
@@ -50,23 +65,23 @@ class SpotifyAPITools:
         if not uris:
             raise RuntimeError(
                 f"[Spotify Top Tracks Error] Tracks returned but no URIs found.\n"
-                f"Artist ID: {artist_id}\n"
+                f"Artist URI: {artist_uri}\n"
                 f"Full response: {top}"
             )
 
         return uris
 
     @staticmethod
-    def get_tracks(artists: List[str]) -> List[str]: #NOSONAR - Tools cannot have self as the first argument
+    def get_tracks(artist_uris: List[str]) -> List[str]:  # NOSONAR
         all_tracks: List[str] = []
 
-        for artist in artists:
-            top_uris = SpotifyAPITools._get_top_tracks(artist)
-            top_3 = top_uris[:3]
+        for uri in artist_uris:
+            top_uris = SpotifyAPITools._get_top_tracks(uri)
+            top_3 = top_uris[:10]
 
             if not top_3:
                 raise RuntimeError(
-                    f"[Spotify Error] Artist '{artist}' returned no usable tracks."
+                    f"[Spotify Error] Artist '{uri}' returned no usable tracks."
                 )
 
             all_tracks.extend(top_3)
@@ -74,7 +89,7 @@ class SpotifyAPITools:
         return all_tracks
 
     @staticmethod
-    def create_playlist(playlist_name: str, playlist_description: str, track_uris: List[str]): #NOSONAR - Tools cannot have self as the first argument
+    def create_playlist(playlist_name: str, playlist_description: str, track_uris: List[str]):  # NOSONAR
         token = SpotifyTokenManager.get_token()
         sp = spotipy.Spotify(auth=token)
 

@@ -1,3 +1,4 @@
+import json
 import os
 import secrets
 import spotipy
@@ -10,7 +11,9 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from spotipy.oauth2 import SpotifyOAuth
+from starlette.responses import JSONResponse
 
+from generator import generate
 from spotify_session.spotify_app_user import SpotifyAppUser
 from spotify_session.spotify_token_manager import SpotifyTokenManager
 
@@ -60,10 +63,10 @@ async def login(request: Request):
 @app.get("/callback")
 async def callback(request: Request, code: Optional[str] = None, state: Optional[str] = None, error: Optional[str] = None):
     if not (SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET):
-        return RedirectResponse(url="/chat")
+        return RedirectResponse(url="/generator")
 
     if error:
-        return RedirectResponse(url=f"/chat?error={error}")
+        return RedirectResponse(url=f"/generator?error={error}")
 
     saved_state = request.session.get("oauth_state")
     if not state or state != saved_state:
@@ -101,18 +104,30 @@ async def callback(request: Request, code: Optional[str] = None, state: Optional
     SpotifyTokenManager.from_token_info(token_info)
     if me:
         SpotifyAppUser.from_json(me)
-    return RedirectResponse(url="/chat")
+    return RedirectResponse(url="/generator")
 
-@app.get("/chat", response_class=HTMLResponse)
-async def chat(request: Request):
+@app.get("/generator", response_class=HTMLResponse)
+async def generator(request: Request):
     user = request.session.get("user")
     if not user:
         return RedirectResponse(url="/")
-    return templates.TemplateResponse("chat.html", {"request": request, "user": user})
+    return templates.TemplateResponse("generator.html", {"request": request, "user": user})
 
 @app.post("/api/create")
-async def create(prompt: str = Form(...)):
-    print("potato")
+async def create(genres: str = Form(...)):
+    try:
+        selected_genres = json.loads(genres)
+    except json.JSONDecodeError:
+        selected_genres = []
+
+    print("Selected genres:", selected_genres)
+
+    # For now, just return them so the UI can display something
+    generate(selected_genres)
+    return JSONResponse({
+        "status": "ok",
+        "selected_genres": selected_genres
+    })
 
 if __name__ == "__main__":
     import uvicorn
