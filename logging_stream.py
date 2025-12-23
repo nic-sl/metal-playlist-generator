@@ -26,7 +26,7 @@ def log(msg: str) -> None:
         try:
             main_loop.call_soon_threadsafe(log_queue.put_nowait, msg)
         except RuntimeError:
-            # If loop is closed or unavailable, ignore enqueue
+            # If the loop is closed or unavailable, ignore the enqueue
             pass
     else:
         # If we don't have a main loop yet, try best-effort enqueue if in an event loop

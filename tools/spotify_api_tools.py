@@ -1,6 +1,5 @@
 import os
 import spotipy
-import logging
 
 from typing import List, Dict, Any
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -42,7 +41,7 @@ class SpotifyAPITools:
             return None
 
         artist = exact_matches[0]
-        log(f"Found exact artist: {artist}")
+        log("Found exact artist. Returning its ID.")
 
         return artist.get("id")
 

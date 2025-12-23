@@ -14,7 +14,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 from spotipy.oauth2 import SpotifyOAuth
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import StreamingResponse
 
 from generator import generate
 from logging_stream import log_queue, log
@@ -149,25 +149,19 @@ async def create(
         artist_count=artist_count,
         track_count=track_count
     )
-
-    return JSONResponse({
-        "status": "ok",
-        "selected_genres": selected_genres,
-        "artist_count": artist_count,
-        "track_count": track_count
-    })
+    return
 
 
 @app.get("/api/logs")
 async def stream_logs(request: Request):
     async def event_generator():
         while True:
-            # Stop if client disconnects
+            # Stop if the client disconnects
             if await request.is_disconnected():
                 break
 
             try:
-                # Wait for next log line with heartbeat timeout
+                # Wait for the next log line with heartbeat timeout
                 msg = await asyncio.wait_for(log_queue.get(), timeout=15)
                 yield f"data: {msg}\n\n"
             except asyncio.TimeoutError:

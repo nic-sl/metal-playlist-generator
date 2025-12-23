@@ -19,35 +19,39 @@ def generate(genres: List[str], artist_count: int, track_count: int):
         band_genres = band.get("genres", [])
 
         if not _matches_genres(band_genres, genres):
+            log("Genre mismatch, skipping.")
             continue
 
-        log("Genre match! Checking availability in Spotify")
+        log("Checking availability in Spotify.")
         spotify_artist = SpotifyAPITools.get_artist(band_name)
         if not spotify_artist:
+            log("Artist not found in Spotify, skipping.")
             continue
 
-        log("Added verified artist")
+        log("Added Spotify-verified artist.")
         verified_artists.append(spotify_artist)
 
-    log("Getting tracks")
+    log(f"Getting the top {track_count} track(s) from each artist.")
     tracks = SpotifyAPITools.get_tracks(verified_artists, track_count)
 
-    log("Creating playlist")
-    SpotifyAPITools.create_playlist(generate_playlist_name(selected_genres=genres), generate_playlist_description(selected_genres=genres), tracks)
+    name = generate_playlist_name(selected_genres=genres)
+    description = generate_playlist_description(selected_genres=genres)
+    log(f"Creating playlist {name}.")
+    SpotifyAPITools.create_playlist(name, description, tracks)
+
 
 def _get_random_band() -> Optional[Dict[str, Any]]:
     url = "https://api.metal-map.com/v1/random"
 
-    log("Getting random band")
+    log("Getting random band using Metal Map API.")
     try:
         response = requests.get(url, timeout=10)
 
         if response.status_code != 200:
-            log(f"Failed to get random band: {response.status_code}")
+            log(f"Failed to get random band: {response.status_code}.")
             return None
 
         data = response.json()
-        log(f"Response: {data}")
 
         if not isinstance(data, list) or not data:
             return None
@@ -73,9 +77,10 @@ def _get_random_band() -> Optional[Dict[str, Any]]:
 
 
 def _matches_genres(band_genres: List[str], selected_genres: List[str]) -> bool:
-    log("Checking if genres match")
+    log("Checking if band genres match selected genres.")
 
     if not selected_genres:
+        log("User did not select any genres, so all bands are valid.")
         return True
 
     band_genres_lower = [g.lower() for g in band_genres]

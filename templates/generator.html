@@ -167,7 +167,6 @@
     </div>
 
     <div id="output" class="log-box" style="display:none;"></div>
-    <div id="finalResult" class="result" style="display:none;"></div>
   </div>
 
   <script>
@@ -202,7 +201,6 @@
     }
 
     const out = document.getElementById("output");
-    const finalResult = document.getElementById("finalResult");
 
     function startLogStream() {
       const evtSource = new EventSource("/api/logs");
@@ -232,9 +230,6 @@
       const statusEl = document.getElementById('status');
       const spinner = document.getElementById('spinner');
 
-      finalResult.style.display = 'none';
-      finalResult.textContent = '';
-
       btn.disabled = true;
       statusEl.style.display = 'block';
       statusEl.textContent = 'Creating your playlist...';
@@ -245,10 +240,8 @@
           .then(res => res.json())
           .then(json => {
               statusEl.textContent = 'Successfully created the playlist!';
-              finalResult.style.display = 'block';
-              finalResult.textContent = JSON.stringify(json, null, 2);
           })
-          .catch(err => {
+          .catch(() => {
               statusEl.textContent = 'There was an error creating the playlist.';
           })
           .finally(() => {
