@@ -149,7 +149,6 @@ async def create(
         artist_count=artist_count,
         track_count=track_count
     )
-    return
 
 
 @app.get("/api/logs")
