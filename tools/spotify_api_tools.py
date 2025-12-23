@@ -8,6 +8,7 @@ from logging_stream import log
 from spotify_session.spotify_token_manager import SpotifyTokenManager
 from spotify_session.spotify_app_user import SpotifyAppUser
 
+
 # noinspection PyMethodParameters
 class SpotifyAPITools:
     BASE_URL: str = "https://api.spotify.com/v1"
@@ -105,7 +106,7 @@ class SpotifyAPITools:
         if track_uris:
             # Add in chunks of 100
             for i in range(0, len(track_uris), 100):
-                chunk = track_uris[i:i+100]
+                chunk = track_uris[i:i + 100]
                 sp.playlist_add_items(playlist_id, chunk)
                 added_uris.extend(chunk)
 

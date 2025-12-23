@@ -42,6 +42,7 @@ async def startup_event():
     loop = asyncio.get_running_loop()
     set_main_loop(loop)
 
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     spotify_configured = bool(SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET)
@@ -52,6 +53,7 @@ async def index(request: Request):
             "spotify_configured": spotify_configured,
         },
     )
+
 
 @app.get("/login")
 async def login(request: Request):
@@ -70,8 +72,10 @@ async def login(request: Request):
     auth_url = sp_oauth.get_authorize_url(state=state)
     return RedirectResponse(url=auth_url)
 
+
 @app.get("/callback")
-async def callback(request: Request, code: Optional[str] = None, state: Optional[str] = None, error: Optional[str] = None):
+async def callback(request: Request, code: Optional[str] = None, state: Optional[str] = None,
+                   error: Optional[str] = None):
     if not (SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET):
         return RedirectResponse(url="/generator")
 
@@ -116,6 +120,7 @@ async def callback(request: Request, code: Optional[str] = None, state: Optional
         SpotifyAppUser.from_json(me)
     return RedirectResponse(url="/generator")
 
+
 @app.get("/generator", response_class=HTMLResponse)
 async def generator(request: Request):
     user = request.session.get("user")
@@ -123,11 +128,12 @@ async def generator(request: Request):
         return RedirectResponse(url="/")
     return templates.TemplateResponse("generator.html", {"request": request, "user": user})
 
+
 @app.post("/api/create")
 async def create(
-    genres: Optional[str] = Form(None),
-    artist_count: int = Form(...),
-    track_count: int = Form(...)
+        genres: Optional[str] = Form(None),
+        artist_count: int = Form(...),
+        track_count: int = Form(...)
 ):
     # Parse genres JSON safely
     if not genres:
@@ -172,4 +178,5 @@ async def stream_logs(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -7,9 +7,11 @@ log_queue: asyncio.Queue[str] = asyncio.Queue()
 # Event loop captured from FastAPI on startup; needed to schedule from threads
 main_loop: Optional[asyncio.AbstractEventLoop] = None
 
+
 def set_main_loop(loop: asyncio.AbstractEventLoop) -> None:
     global main_loop
     main_loop = loop
+
 
 def log(msg: str) -> None:
     """Thread-safe log function that enqueues messages for SSE clients.

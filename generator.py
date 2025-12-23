@@ -75,7 +75,6 @@ def _get_random_band() -> Optional[Dict[str, Any]]:
         return None
 
 
-
 def _matches_genres(band_genres: List[str], selected_genres: List[str]) -> bool:
     log("Checking if band genres match selected genres.")
 
@@ -92,6 +91,7 @@ def _matches_genres(band_genres: List[str], selected_genres: List[str]) -> bool:
         for genre in band_genres_lower
     )
 
+
 def generate_playlist_description(selected_genres: list[str]) -> str:
     if selected_genres:
         if len(selected_genres) == 1:
@@ -103,7 +103,9 @@ def generate_playlist_description(selected_genres: list[str]) -> str:
 
     return "A diverse metal playlist forged for true headbangers."
 
+
 import random
+
 
 def generate_playlist_name(selected_genres: list[str]) -> str:
     metal_words = [
@@ -124,5 +126,3 @@ def generate_playlist_name(selected_genres: list[str]) -> str:
     prefix = random.choice(generic_prefixes)
     word = random.choice(metal_words)
     return f"{prefix} {word}"
-
-
