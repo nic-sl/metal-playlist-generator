@@ -7,10 +7,11 @@ from tools.spotify_api_tools import SpotifyAPITools
 
 logger = logging.getLogger("uvicorn")
 
-def generate(genres: List[str]):
+def generate(genres: List[str], artist_count: int, track_count: int):
     verified_artists = []
+    track_per_artist = track_count // artist_count
 
-    while len(verified_artists) < 3:
+    while len(verified_artists) < artist_count:
         band = _get_random_band()
 
         if not band:
@@ -31,7 +32,7 @@ def generate(genres: List[str]):
         verified_artists.append(spotify_artist)
 
     logger.info("Getting tracks")
-    tracks = SpotifyAPITools.get_tracks(verified_artists)
+    tracks = SpotifyAPITools.get_tracks(verified_artists, track_per_artist)
 
     logger.info("Creating playlist")
     SpotifyAPITools.create_playlist("Test", "test", tracks)

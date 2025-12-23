@@ -67,6 +67,20 @@
             gap: 0.5rem;
             margin-top: 0.75rem;
         }
+
+        .input-group {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        input[type="number"] {
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +97,18 @@
 
             <!-- Hidden input where selected genres will be stored -->
             <input type="hidden" id="genresInput" name="genres" />
+
+            <!-- NEW: Number of artists -->
+            <div class="input-group">
+                <label for="artist_count">Number of artists</label>
+                <input type="number" id="artist_count" name="artist_count" min="1" placeholder="e.g. 10" required />
+            </div>
+
+            <!-- NEW: Number of tracks -->
+            <div class="input-group">
+                <label for="track_count">Number of tracks</label>
+                <input type="number" id="track_count" name="track_count" min="1" placeholder="e.g. 30" required />
+            </div>
 
             <button id="createBtn" type="submit">Create</button>
         </form>

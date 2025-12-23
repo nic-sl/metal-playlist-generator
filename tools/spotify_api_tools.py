@@ -72,12 +72,12 @@ class SpotifyAPITools:
         return uris
 
     @staticmethod
-    def get_tracks(artist_uris: List[str]) -> List[str]:  # NOSONAR
+    def get_tracks(artist_uris: List[str], track_count: int) -> List[str]:  # NOSONAR
         all_tracks: List[str] = []
 
         for uri in artist_uris:
             top_uris = SpotifyAPITools._get_top_tracks(uri)
-            top_3 = top_uris[:10]
+            top_3 = top_uris[:track_count]
 
             if not top_3:
                 raise RuntimeError(

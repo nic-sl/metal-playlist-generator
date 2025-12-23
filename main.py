@@ -114,20 +114,35 @@ async def generator(request: Request):
     return templates.TemplateResponse("generator.html", {"request": request, "user": user})
 
 @app.post("/api/create")
-async def create(genres: str = Form(...)):
+async def create(
+    genres: str = Form(...),
+    artist_count: int = Form(...),
+    track_count: int = Form(...)
+):
+    # Parse genres JSON safely
     try:
         selected_genres = json.loads(genres)
     except json.JSONDecodeError:
         selected_genres = []
 
     print("Selected genres:", selected_genres)
+    print("Artist count:", artist_count)
+    print("Track count:", track_count)
 
-    # For now, just return them so the UI can display something
-    generate(selected_genres)
+    # Call your generator (update as needed)
+    generate(
+        genres=selected_genres,
+        artist_count=artist_count,
+        track_count=track_count
+    )
+
     return JSONResponse({
         "status": "ok",
-        "selected_genres": selected_genres
+        "selected_genres": selected_genres,
+        "artist_count": artist_count,
+        "track_count": track_count
     })
+
 
 if __name__ == "__main__":
     import uvicorn
