@@ -4,10 +4,10 @@ import logging
 
 from typing import List, Dict, Any
 from spotipy.oauth2 import SpotifyClientCredentials
+
+from logging_stream import log
 from spotify_session.spotify_token_manager import SpotifyTokenManager
 from spotify_session.spotify_app_user import SpotifyAppUser
-
-logger = logging.getLogger("uvicorn")
 
 # noinspection PyMethodParameters
 class SpotifyAPITools:
@@ -26,7 +26,7 @@ class SpotifyAPITools:
 
     @staticmethod
     def get_artist(artist_name: str) -> Dict[str, Any] | None:
-        logger.log(logging.INFO, f"Searching for artist: {artist_name}")
+        log(f"Searching for artist: {artist_name}")
         sp = SpotifyAPITools._get_app_client()
 
         search = sp.search(q=artist_name, type="artist", limit=10)
@@ -38,11 +38,11 @@ class SpotifyAPITools:
         ]
 
         if not exact_matches:
-            logger.warning(f"No exact artist match found for '{artist_name}'")
+            log(f"No exact artist match found for '{artist_name}'")
             return None
 
         artist = exact_matches[0]
-        logger.log(logging.INFO, f"Found exact artist: {artist}")
+        log(f"Found exact artist: {artist}")
 
         return artist.get("id")
 

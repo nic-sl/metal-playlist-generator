@@ -1,15 +1,13 @@
+import requests
+
 from typing import List, Dict, Any, Optional
 
-import requests
-import logging
-
+from logging_stream import log
 from tools.spotify_api_tools import SpotifyAPITools
 
-logger = logging.getLogger("uvicorn")
 
 def generate(genres: List[str], artist_count: int, track_count: int):
     verified_artists = []
-    track_per_artist = track_count // artist_count
 
     while len(verified_artists) < artist_count:
         band = _get_random_band()
@@ -23,33 +21,33 @@ def generate(genres: List[str], artist_count: int, track_count: int):
         if not _matches_genres(band_genres, genres):
             continue
 
-        logger.info("Genre match! Checking availability in Spotify")
+        log("Genre match! Checking availability in Spotify")
         spotify_artist = SpotifyAPITools.get_artist(band_name)
         if not spotify_artist:
             continue
 
-        logger.info("Added verified artist")
+        log("Added verified artist")
         verified_artists.append(spotify_artist)
 
-    logger.info("Getting tracks")
-    tracks = SpotifyAPITools.get_tracks(verified_artists, track_per_artist)
+    log("Getting tracks")
+    tracks = SpotifyAPITools.get_tracks(verified_artists, track_count)
 
-    logger.info("Creating playlist")
-    SpotifyAPITools.create_playlist("Test", "test", tracks)
+    log("Creating playlist")
+    SpotifyAPITools.create_playlist(generate_playlist_name(selected_genres=genres), generate_playlist_description(selected_genres=genres), tracks)
 
 def _get_random_band() -> Optional[Dict[str, Any]]:
     url = "https://api.metal-map.com/v1/random"
 
-    logger.info("Getting random band")
+    log("Getting random band")
     try:
         response = requests.get(url, timeout=10)
 
         if response.status_code != 200:
-            logger.warning(f"Failed to get random band: {response.status_code}")
+            log(f"Failed to get random band: {response.status_code}")
             return None
 
         data = response.json()
-        logger.info(f"Response: {data}")
+        log(f"Response: {data}")
 
         if not isinstance(data, list) or not data:
             return None
@@ -62,8 +60,8 @@ def _get_random_band() -> Optional[Dict[str, Any]]:
         # Normalize to your expected structure
         genres_list = [genre] if genre else []
 
-        logger.info(f"Name: {name}")
-        logger.info(f"Genres: {genres_list}")
+        log(f"Name: {name}")
+        log(f"Genres: {genres_list}")
         return {
             "name": name,
             "genres": genres_list
@@ -75,7 +73,10 @@ def _get_random_band() -> Optional[Dict[str, Any]]:
 
 
 def _matches_genres(band_genres: List[str], selected_genres: List[str]) -> bool:
-    logger.info("Checking if genres match")
+    log("Checking if genres match")
+
+    if not selected_genres:
+        return True
 
     band_genres_lower = [g.lower() for g in band_genres]
     selected_lower = [g.lower() for g in selected_genres]
@@ -85,4 +86,38 @@ def _matches_genres(band_genres: List[str], selected_genres: List[str]) -> bool:
         for sel in selected_lower
         for genre in band_genres_lower
     )
+
+def generate_playlist_description(selected_genres: list[str]) -> str:
+    if selected_genres:
+        if len(selected_genres) == 1:
+            genre_text = selected_genres[0]
+        else:
+            genre_text = ", ".join(selected_genres[:-1]) + " and " + selected_genres[-1]
+
+        return f"A crushing selection of {genre_text} metal tracks."
+
+    return "A diverse metal playlist forged for true headbangers."
+
+import random
+
+def generate_playlist_name(selected_genres: list[str]) -> str:
+    metal_words = [
+        "Rituals", "Abyss", "Storms", "Dominion", "Legion", "Cataclysm",
+        "Requiem", "Sanctum", "Inferno", "Monolith", "Eclipse", "Ascension",
+        "Annihilation", "Odyssey", "Revolt", "Rebirth"
+    ]
+
+    if selected_genres:
+        genre = random.choice(selected_genres)
+        word = random.choice(metal_words)
+        return f"{genre} {word}"
+
+    # If no genres selected, use generic metal names
+    generic_prefixes = [
+        "Metal", "Heavy", "Dark", "Iron", "Steel", "Forged", "Unholy"
+    ]
+    prefix = random.choice(generic_prefixes)
+    word = random.choice(metal_words)
+    return f"{prefix} {word}"
+
 

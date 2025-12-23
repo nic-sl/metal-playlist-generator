@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import secrets
@@ -6,14 +7,17 @@ import spotipy
 from typing import Optional
 from dotenv import load_dotenv
 
+from logging_stream import set_main_loop
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 from spotipy.oauth2 import SpotifyOAuth
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, StreamingResponse
 
 from generator import generate
+from logging_stream import log_queue, log
 from spotify_session.spotify_app_user import SpotifyAppUser
 from spotify_session.spotify_token_manager import SpotifyTokenManager
 
@@ -31,6 +35,12 @@ app = FastAPI(title="Spotify Playlist Agent")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 templates = Jinja2Templates(directory="templates")
+
+
+@app.on_event("startup")
+async def startup_event():
+    loop = asyncio.get_running_loop()
+    set_main_loop(loop)
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -115,22 +125,26 @@ async def generator(request: Request):
 
 @app.post("/api/create")
 async def create(
-    genres: str = Form(...),
+    genres: Optional[str] = Form(None),
     artist_count: int = Form(...),
     track_count: int = Form(...)
 ):
     # Parse genres JSON safely
-    try:
-        selected_genres = json.loads(genres)
-    except json.JSONDecodeError:
+    if not genres:
         selected_genres = []
+    else:
+        try:
+            selected_genres = json.loads(genres)
+        except json.JSONDecodeError:
+            selected_genres = []
 
-    print("Selected genres:", selected_genres)
-    print("Artist count:", artist_count)
-    print("Track count:", track_count)
+    log(f"Selected genres: {selected_genres}")
+    log(f"Artist count: {artist_count}")
+    log(f"Track count: {track_count}")
 
-    # Call your generator (update as needed)
-    generate(
+    # 🔥 Run generate() in a background thread
+    await run_in_threadpool(
+        generate,
         genres=selected_genres,
         artist_count=artist_count,
         track_count=track_count
@@ -142,6 +156,25 @@ async def create(
         "artist_count": artist_count,
         "track_count": track_count
     })
+
+
+@app.get("/api/logs")
+async def stream_logs(request: Request):
+    async def event_generator():
+        while True:
+            # Stop if client disconnects
+            if await request.is_disconnected():
+                break
+
+            try:
+                # Wait for next log line with heartbeat timeout
+                msg = await asyncio.wait_for(log_queue.get(), timeout=15)
+                yield f"data: {msg}\n\n"
+            except asyncio.TimeoutError:
+                # Send a comment ping to keep the SSE connection alive
+                yield ": ping\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":

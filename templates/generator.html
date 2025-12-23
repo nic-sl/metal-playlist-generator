@@ -1,197 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Metal Playlist Generator</title>
-    <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; margin: 2rem; }
-        .card { max-width: 680px; margin: 0 auto; padding: 1.5rem; border: 1px solid #ddd; border-radius: 12px; }
-        .row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metal Playlist Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+      margin: 2rem;
+    }
 
-        .genre-btn {
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: white;
-            background: gray;
-            transition: background 0.2s;
-        }
+    .card {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+    }
 
-        .genre-btn.active {
-            background: #1DB954;
-        }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
 
-        button#createBtn {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: white;
-            background: #1DB954;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s, opacity 0.2s;
-            margin-top: 1rem;
-        }
+    .genre-btn {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      background: gray;
+      transition: background 0.2s;
+    }
 
-        button#createBtn:hover { filter: brightness(0.95); }
+    .genre-btn.active {
+      background: #1DB954;
+    }
 
-        button#createBtn:disabled {
-            background: #9f9f9f;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+    button#createBtn {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      color: white;
+      background: #1DB954;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s, opacity 0.2s;
+      margin-top: 1rem;
+    }
 
-        .muted { color: #666; font-size: 0.95rem; }
-        .result { margin-top: 1rem; padding: 0.75rem; background: #f7f7f7; border-radius: 8px; border: 1px solid #eee; white-space: pre-wrap; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    button#createBtn:hover {
+      filter: brightness(0.95);
+    }
 
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ccc;
-            border-top-color: #1DB954;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: none;
-            margin-left: 0.5rem;
-        }
+    button#createBtn:disabled {
+      background: #9f9f9f;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+    .muted {
+      color: #666;
+      font-size: 0.95rem;
+    }
 
-        .status-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
 
-        .input-group {
-            margin-top: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #ccc;
+      border-top-color: #1DB954;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+      margin-left: 0.5rem;
+    }
 
-        input[type="number"] {
-            padding: 0.6rem;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-    </style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .input-group {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    input[type="number"] {
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .log-box {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #111;
+      color: #eee;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid #333;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #f7f7f7;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      white-space: pre-wrap;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <h2>Metal Playlist Generator</h2>
-            <div class="muted">Signed in as: {{ user.display_name }}</div>
-        </div>
-
-        <form id="form" method="post" action="/api/create" onsubmit="return submitForm(event)">
-            <div class="row" id="genreContainer">
-                <!-- Buttons generated by JS -->
-            </div>
-
-            <!-- Hidden input where selected genres will be stored -->
-            <input type="hidden" id="genresInput" name="genres" />
-
-            <!-- NEW: Number of artists -->
-            <div class="input-group">
-                <label for="artist_count">Number of artists</label>
-                <input type="number" id="artist_count" name="artist_count" min="1" placeholder="e.g. 10" required />
-            </div>
-
-            <!-- NEW: Number of tracks -->
-            <div class="input-group">
-                <label for="track_count">Number of tracks</label>
-                <input type="number" id="track_count" name="track_count" min="1" placeholder="e.g. 30" required />
-            </div>
-
-            <button id="createBtn" type="submit">Create</button>
-        </form>
-
-        <div class="status-row">
-            <div id="status" class="muted" style="display:none;"></div>
-            <div id="spinner" class="spinner"></div>
-        </div>
-
-        <div id="output" class="result" style="display:none;"></div>
+  <div class="card">
+    <div class="header">
+      <h2>Metal Playlist Generator</h2>
+      <div class="muted">Signed in as: {{ user.display_name }}</div>
     </div>
 
-    <script>
-        const genres = [
-            "Black", "Death", "Experimental", "Progressive", "Symphonic",
-            "Thrash", "Industrial", "Folk", "Doom", "Stoner",
-            "Power", "Deathcore", "Metalcore"
-        ];
+    <form id="form" method="post" action="/api/create" onsubmit="return submitForm(event)">
+      <div class="row" id="genreContainer"></div>
+      <input type="hidden" id="genresInput" name="genres" />
 
-        const container = document.getElementById("genreContainer");
-        const genresInput = document.getElementById("genresInput");
+      <div class="input-group">
+        <label for="artist_count">Number of artists</label>
+        <input type="number" id="artist_count" name="artist_count" min="1" placeholder="e.g. 10" required />
+      </div>
 
-        // Create toggle buttons
-        genres.forEach(g => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "genre-btn";
-            btn.textContent = g;
+      <div class="input-group">
+        <label for="track_count">Tracks per artist</label>
+        <input type="number" id="track_count" name="track_count" min="1" placeholder="e.g. 5" required />
+      </div>
 
-            btn.addEventListener("click", () => {
-                btn.classList.toggle("active");
-                updateGenresInput();
-            });
+      <button id="createBtn" type="submit">Create</button>
+    </form>
 
-            container.appendChild(btn);
-        });
+    <div class="status-row">
+      <div id="status" class="muted" style="display:none;"></div>
+      <div id="spinner" class="spinner"></div>
+    </div>
 
-        function updateGenresInput() {
-            const selected = [...document.querySelectorAll(".genre-btn.active")]
-                .map(b => b.textContent);
-            genresInput.value = JSON.stringify(selected);
-        }
+    <div id="output" class="log-box" style="display:none;"></div>
+    <div id="finalResult" class="result" style="display:none;"></div>
+  </div>
 
-        async function submitForm(e) {
-            e.preventDefault();
+  <script>
+    const genres = [
+      "Black", "Death", "Experimental", "Progressive", "Symphonic",
+      "Thrash", "Industrial", "Folk", "Doom", "Stoner",
+      "Power", "Deathcore", "Metalcore"
+    ];
 
-            const form = document.getElementById('form');
-            const data = new FormData(form);
-            const btn = document.getElementById('createBtn');
-            const statusEl = document.getElementById('status');
-            const spinner = document.getElementById('spinner');
-            const out = document.getElementById('output');
+    const container = document.getElementById("genreContainer");
+    const genresInput = document.getElementById("genresInput");
 
-            out.style.display = 'none';
-            out.textContent = '';
+    genres.forEach(g => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "genre-btn";
+      btn.textContent = g;
 
-            btn.disabled = true;
-            statusEl.style.display = 'block';
-            statusEl.textContent = 'Creating your playlist...';
-            spinner.style.display = 'inline-block';
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("active");
+        updateGenresInput();
+      });
 
-            try {
-                const res = await fetch('/api/create', { method: 'POST', body: data });
-                const json = await res.json();
+      container.appendChild(btn);
+    });
 
-                statusEl.textContent = 'Successfully created the playlist!';
+    updateGenresInput();
 
-                if (json && typeof json === 'object') {
-                    const cleaned = JSON.parse(JSON.stringify(json, (k, v) => (v === null ? undefined : v)));
-                    if (Object.keys(cleaned).length > 0) {
-                        out.style.display = 'block';
-                        out.textContent = JSON.stringify(cleaned, null, 2);
-                    }
-                }
-            } catch (err) {
-                statusEl.textContent = 'There was an error creating the playlist.';
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
+    function updateGenresInput() {
+      const selected = [...document.querySelectorAll(".genre-btn.active")].map(b => b.textContent);
+      genresInput.value = JSON.stringify(selected);
+    }
 
-            return false;
-        }
-    </script>
+    const out = document.getElementById("output");
+    const finalResult = document.getElementById("finalResult");
+
+    function startLogStream() {
+      const evtSource = new EventSource("/api/logs");
+      out.style.display = "block";
+      out.textContent = "";
+
+      evtSource.onmessage = function(event) {
+        const timestamp = new Date().toLocaleTimeString();
+        out.textContent += `[${timestamp}] ${event.data}\n`;
+        out.scrollTop = out.scrollHeight;
+      };
+
+      evtSource.onerror = function() {
+        console.log("Log stream closed");
+        evtSource.close();
+      };
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+
+      startLogStream();  // Start logs immediately
+
+      const form = document.getElementById('form');
+      const data = new FormData(form);
+      const btn = document.getElementById('createBtn');
+      const statusEl = document.getElementById('status');
+      const spinner = document.getElementById('spinner');
+
+      finalResult.style.display = 'none';
+      finalResult.textContent = '';
+
+      btn.disabled = true;
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Creating your playlist...';
+      spinner.style.display = 'inline-block';
+
+      // 🔥 FIRE AND FORGET — do NOT await here
+      fetch('/api/create', { method: 'POST', body: data })
+          .then(res => res.json())
+          .then(json => {
+              statusEl.textContent = 'Successfully created the playlist!';
+              finalResult.style.display = 'block';
+              finalResult.textContent = JSON.stringify(json, null, 2);
+          })
+          .catch(err => {
+              statusEl.textContent = 'There was an error creating the playlist.';
+          })
+          .finally(() => {
+              btn.disabled = false;
+              spinner.style.display = 'none';
+          });
+
+      return false;
+    }
+
+  </script>
 </body>
 </html>
