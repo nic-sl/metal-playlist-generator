@@ -1,7 +1,7 @@
 [project]
 name = "metal-playlist-generator"
 version = "0.1.0"
-description = "Add your description here"
+description = "A FastAPI-powered tool for generating metal playlists on Spotify based on subgenres."
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.127.0",
