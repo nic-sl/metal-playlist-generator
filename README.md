@@ -70,4 +70,4 @@ The application will be available at `http://127.0.0.1:8000`.
 
 ## Notes
 
-- Spotify's search API is based on a [weighted ranking system](https://developer.spotify.com/documentation/web-api/reference/search/search/) that may not always return the best results. I tried to overcome this by exactly matching the artist's name, but it's not perfect.
+- Spotify's search API is based on a weighted ranking system that may not always return the best results. I tried to overcome this by exactly matching the artist's name, but it's not perfect.
